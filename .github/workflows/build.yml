@@ -1,33 +1,48 @@
-name: Build macOS Executable
+name: Build Multi-Platform Executables
 
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build-macos:
-    runs-on: macos-latest
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]  # 定义三个操作系统
+    runs-on: ${{ matrix.os }}  # 动态选择操作系统
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
         pip install -r requirements.txt
 
-    - name: Build macOS executable
+    - name: Build Executable
       run: |
-        pyinstaller --onefile --name svg2png svg2png.py
+        # 根据不同系统生成文件名
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          output_name="svg2png-windows.exe"
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          output_name="svg2png-macos"
+        else
+          output_name="svg2png-linux"
+        fi
 
-    - name: Upload artifact
+        pyinstaller --onefile --name $output_name main.py
+
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: macos-executable
-        path: dist/svg2png
+        name: executable-${{ runner.os }}
+        path: dist/*
