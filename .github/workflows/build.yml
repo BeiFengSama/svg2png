@@ -1,0 +1,33 @@
+name: Build macOS Executable
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt
+
+    - name: Build macOS executable
+      run: |
+        pyinstaller --onefile --name svg2png svg2png.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-executable
+        path: dist/svg2png
