@@ -39,7 +39,7 @@ jobs:
           output_name="svg2png-linux"
         fi
 
-        pyinstaller --onefile --name $output_name main.py
+        pyinstaller --onefile --name $output_name svg2png.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
